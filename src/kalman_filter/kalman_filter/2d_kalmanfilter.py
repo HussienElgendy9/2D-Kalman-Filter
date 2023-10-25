@@ -9,7 +9,6 @@ class KalmanFilter(Node):
         super().__init__('kalman_filter_node')
         # Initialize kalman variables
         #estimated location
-        self.x = 0
         self.x_hat = np.zeros((2,1))
         #standard deviation = σ, variance = p, σ^2=p
         self.sigma_x = 1
@@ -24,8 +23,8 @@ class KalmanFilter(Node):
         #Z: Measurment Matrix
         self.z = np.dot(self.h,self.x_hat)
         #Q: Covariance Matrix
-        self.q_x = 20
-        self.q_y = 20
+        self.q_x = 0.01
+        self.q_y = 0.01
         self.q = np.array([
         [self.q_x, 0],
         [0, self.q_y]])
@@ -34,8 +33,8 @@ class KalmanFilter(Node):
         [1, 0],
         [0, 1]])
         #R: Measurment Error
-        self.r_x = 0.1
-        self.r_y = 0.1
+        self.r_x = 75
+        self.r_y = 75
         self.r = np.array([
         [self.r_x, 0],
         [0, self.r_y]])
@@ -65,7 +64,7 @@ class KalmanFilter(Node):
         # Update step
         K = np.dot(np.dot(self.p, self.h.T), np.linalg.inv(np.dot(np.dot(self.h, self.p), self.h.T) + self.r))        
         self.x_hat = self.x_hat + np.dot(K, (z-self.x_hat))
-        
+        self.p = np.dot((np.eye(2) - np.dot(K, self.h)), self.p)        
         #publish the estimated reading
         estimated_msg = Odometry()
         estimated_msg.pose.pose.position.x = self.x_hat[0, 0]
